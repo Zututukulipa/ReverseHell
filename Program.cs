@@ -39,7 +39,7 @@ namespace ReverseHell
         }
         static void RunOptions(Options opts)
         {
-            var networkDevices = InterfaceExtractor.ExtractLinuxInterfaces(InterfaceInfo.GetInterfaceInfo());
+            var networkDevices = InterfaceExtractor.ExtractLinuxInterfaces(InterfaceExtractor.GetInterfaceInfo());
             var interfaceNumber = opts.Interface - 1;
             var designatedPort = opts.Port;
             string terminalCommand = string.Empty;
