@@ -1,36 +1,24 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 
-namespace ReverseHell{
-    class InterfaceExtractor{
+namespace ReverseHell
+{
+    class InterfaceExtractor
+    {
 
-        public static List<LinuxInterface> ExtractLinuxInterfaces(string terminalOutput){
-            List<LinuxInterface> interfaces = new List<LinuxInterface>();
-            var networkDevices = Regex.Split(GetInterfaceInfo(), "\n[0-9]:\x20");
-
-            if(networkDevices.Length > 0)
-                networkDevices[0] = networkDevices[0].Remove(0,3);
-
-            foreach (var item in networkDevices)
+        public static IPAddress ExtractIpV4Address(UnicastIPAddressInformationCollection addresses)
+        {
+            foreach (var address in addresses)
             {
-                interfaces.Add(new LinuxInterface(item));
+                if (address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    return address.Address;
+
             }
 
-            return interfaces;
+            throw new KeyNotFoundException("Selected interface does not have assigned IPv4 Address");
         }
-
-
-     public static string GetInterfaceInfo(){
-            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "/usr/bin/ip", Arguments = "a", }; 
-            Process proc = new Process() { StartInfo = startInfo, };
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.RedirectStandardOutput = true;
-            proc.Start();
-            string output = proc.StandardOutput.ReadToEnd();
-            proc.WaitForExit();
-
-            return output;
-     }   
     }
 }

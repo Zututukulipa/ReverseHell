@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.NetworkInformation;
 using CommandLine;
 using TextCopy;
 
@@ -34,37 +36,49 @@ namespace ReverseHell
             CommandLine.Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(RunOptions)
                 .WithNotParsed(HandleParseError);
+
+  
             
 
         }
         static void RunOptions(Options opts)
         {
-            var networkDevices = InterfaceExtractor.ExtractLinuxInterfaces(InterfaceExtractor.GetInterfaceInfo());
             var interfaceNumber = opts.Interface - 1;
             var designatedPort = opts.Port;
             string terminalCommand = string.Empty;
+
+            NetworkInterface[] networkDevices = NetworkInterface.GetAllNetworkInterfaces();
+
+            if(interfaceNumber <= 0 || interfaceNumber > networkDevices.Length){
+                System.Console.WriteLine("Invalid interface index.");
+                return;
+            }
+
+            var addresses = networkDevices[interfaceNumber].GetIPProperties().UnicastAddresses;
+            IPAddress ipv4Address = InterfaceExtractor.ExtractIpV4Address(addresses);
+
             switch (opts.Language.ToLower())
             {
                 case "bash":
-                    terminalCommand = ReverseShells.GetBashShell(networkDevices[interfaceNumber].IPv4, designatedPort);
+                    terminalCommand = ReverseShells.GetBashShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
                     break;
                     case "perl":
-                    terminalCommand = ReverseShells.GetPerlShell(networkDevices[interfaceNumber].IPv4, designatedPort);
+                    terminalCommand = ReverseShells.GetPerlShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
                     break;
                     case "python":
-                    terminalCommand = ReverseShells.GetPythonShell(networkDevices[interfaceNumber].IPv4, designatedPort);
+                    terminalCommand = ReverseShells.GetPythonShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
                     break;
                     case "php":
-                    terminalCommand = ReverseShells.GetPHPShell(networkDevices[interfaceNumber].IPv4, designatedPort);
+                    terminalCommand = ReverseShells.GetPHPShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
                     break;
                     case "ruby":
-                    terminalCommand = ReverseShells.GetRubyShell(networkDevices[interfaceNumber].IPv4, designatedPort);
+                    terminalCommand = ReverseShells.GetRubyShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
                     break;
                     case "nc":
-                    terminalCommand = ReverseShells.GetNetcatShell(networkDevices[interfaceNumber].IPv4, designatedPort);
+                    terminalCommand = ReverseShells.GetNetcatShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
                     break;
                     case "java":
-                    terminalCommand = ReverseShells.GetJavaShell(networkDevices[interfaceNumber].IPv4, designatedPort);
+                    terminalCommand = ReverseShells.GetJavaShell(Convert.ToString(ipv4Address), designatedPort);
                     break;
                 default:
                     throw new Exception("unsupported language");
