@@ -36,55 +36,36 @@ namespace ReverseHell
             CommandLine.Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(RunOptions)
                 .WithNotParsed(HandleParseError);
-
-  
-            
-
         }
         static void RunOptions(Options opts)
         {
             var interfaceNumber = opts.Interface - 1;
             var designatedPort = opts.Port;
+            var language = opts.Language.ToLower();
             string terminalCommand = string.Empty;
 
             NetworkInterface[] networkDevices = NetworkInterface.GetAllNetworkInterfaces();
 
-            if(interfaceNumber <= 0 || interfaceNumber > networkDevices.Length){
+            if (interfaceNumber <= 0 || interfaceNumber > networkDevices.Length)
+            {
                 System.Console.WriteLine("Invalid interface index.");
                 return;
             }
 
             var addresses = networkDevices[interfaceNumber].GetIPProperties().UnicastAddresses;
             IPAddress ipv4Address = InterfaceExtractor.ExtractIpV4Address(addresses);
-
-            switch (opts.Language.ToLower())
+            try
             {
-                case "bash":
-                    terminalCommand = ReverseShells.GetBashShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
-                    break;
-                    case "perl":
-                    terminalCommand = ReverseShells.GetPerlShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
-                    break;
-                    case "python":
-                    terminalCommand = ReverseShells.GetPythonShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
-                    break;
-                    case "php":
-                    terminalCommand = ReverseShells.GetPHPShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
-                    break;
-                    case "ruby":
-                    terminalCommand = ReverseShells.GetRubyShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
-                    break;
-                    case "nc":
-                    terminalCommand = ReverseShells.GetNetcatShell(Convert.ToString(ipv4Address.MapToIPv4()), designatedPort);
-                    break;
-                    case "java":
-                    terminalCommand = ReverseShells.GetJavaShell(Convert.ToString(ipv4Address), designatedPort);
-                    break;
-                default:
-                    throw new Exception("unsupported language");
+                terminalCommand = ReverseShellProvider.GetReverseShell(language, ipv4Address, designatedPort);
             }
+            catch (ArgumentException ex)
+            {
+                System.Console.WriteLine(ex.Message);
+                return;
+            }
+            
             System.Console.WriteLine(terminalCommand);
-            if(opts.ToClipboard)
+            if (opts.ToClipboard)
                 ClipboardService.SetText(terminalCommand);
         }
         static void HandleParseError(IEnumerable<Error> errs)
