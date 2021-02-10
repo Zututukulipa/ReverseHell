@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using CommandLine;
+using ShellScrape;
 using TextCopy;
 
 namespace ReverseHell
@@ -63,7 +64,7 @@ namespace ReverseHell
                 System.Console.WriteLine(ex.Message);
                 return;
             }
-            
+
             System.Console.WriteLine(terminalCommand);
             if (opts.ToClipboard)
                 ClipboardService.SetText(terminalCommand);

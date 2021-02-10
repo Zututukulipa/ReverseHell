@@ -10,4 +10,8 @@
     <PackageReference Include="TextCopy" Version="4.2.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ShellScrape\ShellScrape.csproj" />
+  </ItemGroup>
+
 </Project>
